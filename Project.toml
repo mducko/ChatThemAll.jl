@@ -1,6 +1,6 @@
-authors = ["azzaare <jf@baffier.fr> and contributors"]
 name = "ChatThemAll"
 uuid = "d20e7657-e361-40d3-9674-24e82b8f1914"
+authors = ["azzaare <jf@baffier.fr> and contributors"]
 version = "0.0.1"
 
 [compat]
