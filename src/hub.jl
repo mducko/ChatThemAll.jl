@@ -1,31 +1,53 @@
-struct BotHub
+struct BotsHub
     bots::Dict{String,AbstractBot}
-    modules::Dict{Symbol,AbstractModule}
+    modules::Dict{String,AbstractModule}
+    state::HubState
 
-    function BotHub(;
-        bots=Dict{String,AbstractBot}(),
-        modules=Dict{Symbol,AbstractModule}()
-    )
-        return new(bots, modules)
+    function BotsHub()
+        return new(
+            Dict{String,AbstractBot}(),
+            Dict{String,AbstractModule}(),
+            HubState()
+        )
     end
 end
 
-bots(hub::BotHub) = hub.bots
+bots(hub::BotsHub) = hub.bots
 
-function listen(hub::BotHub) end
+modules(hub::BotsHub) = hub.modules
 
-function monitor(hub::BotHub) end
+state(hub::BotsHub) = hub.state
 
-function execute(hub::BotHub) end
+add!(hub::BotsHub, bot::AbstractBot) = push!(bots(hub), name(bot) => bot)
 
-function start(hub::BotHub)
-    @info "Starting hub modules"
-    for (module_name, m) in modules(hub)
-        @info "\tStarting module $module_name"
-        start(m)
+function add!(
+    hub::BotsHub,
+    m::AbstractModule;
+    concurrents::Set{String}=Set{String}(),
+    depends_on::Set{String}=Set{String}()
+)
+    push!(modules(hub), name(m) => m)
+    add!(state(hub), name(m), concurrents, depends_on)
+end
+
+function start!(hub::BotsHub, log_path=joinpath(pwd(), "log"))
+    d = now(UTC)
+    @info "[$d] Starting hub with bots"
+    mkpath(log_path)
+    path = joinpath(log_path, "$d.log")
+    f = open(path, "a")
+    foreach(bot -> println("\t\t• $bot"), collect(keys(bots(hub))))
+    println("\n\tStarting modules")
+    @sync for (module_name, m) in modules(hub)
+        @async begin
+            wait_dependencies(state(hub), module_name)
+            d = now(UTC)
+            println("\t\t• $module_name [$d]")
+            write(f, "[$d] start init $module_name\n")
+            schedule(init(m))
+            is_initialized(state(hub), module_name)
+            write(f, "[$d] end init $module_name\n")
+        end
     end
-    for (bot_name, bot) in bots(hub)
-        @info "Starting bot $bot_name"
-        start(bot)
-    end
+    close(f)
 end

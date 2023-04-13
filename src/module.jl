@@ -1,15 +1,59 @@
 abstract type AbstractModule end
 
-abstract type ListeningModule <: AbstractModule end
+struct EmptyModule <: AbstractModule end
 
-abstract type MonitoringModule <: AbstractModule end
+init(::EmptyModule) = nothing
 
-abstract type ExecutionModule <: AbstractModule end
+init(m::AbstractModule) = m.init
 
-start(::AbstractModule) = nothing
+name(::EmptyModule) = "∅ module"
 
-start(m::ListeningModule) = listen(m)
+name(m::AbstractModule) = m.name
 
-start(m::MonitoringModule) = monitor(m)
+run(::EmptyModule) = nothing
 
-start(m::ExecutionModule) = execute(m)
+run(m::AbstractModule) = m.run
+
+# abstract type SpecModule end
+
+struct ListeningModule <: AbstractModule
+    init::Union{Task,Nothing}
+    name::String
+    run::Union{Task,Nothing}
+
+    function ListeningModule(;
+        init::Union{Task,Nothing}=nothing,
+        name::String="Listening module",
+        run::Union{Task,Nothing}=nothing
+    )
+        return new(init, name, run)
+    end
+end
+
+struct MonitoringModule <: AbstractModule
+    init::Union{Task,Nothing}
+    name::String
+    run::Union{Task,Nothing}
+
+    function MonitoringModule(;
+        init::Union{Task,Nothing}=nothing,
+        name::String="Monitoring module",
+        run::Union{Task,Nothing}=nothing
+    )
+        return new(init, name, run)
+    end
+end
+
+struct ExecutionModule <: AbstractModule
+    init::Union{Task,Nothing}
+    name::String
+    run::Union{Task,Nothing}
+
+    function ExecutionModule(;
+        init::Union{Task,Nothing}=nothing,
+        name::String="Execution module",
+        run::Union{Task,Nothing}=nothing
+    )
+        return new(init, name, run)
+    end
+end
