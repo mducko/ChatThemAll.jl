@@ -26,6 +26,7 @@ struct ListeningModule <: AbstractModule
         name::String="Listening module",
         run::Union{Task,Nothing}=nothing
     )
+        simulate_interaction(1.0, 0.5)
         return new(init, name, run)
     end
 end
@@ -40,6 +41,7 @@ struct MonitoringModule <: AbstractModule
         name::String="Monitoring module",
         run::Union{Task,Nothing}=nothing
     )
+        simulate_interaction(1.0, 0.5)
         return new(init, name, run)
     end
 end
@@ -54,6 +56,7 @@ struct ExecutionModule <: AbstractModule
         name::String="Execution module",
         run::Union{Task,Nothing}=nothing
     )
+        simulate_interaction(1.0, 0.5)
         return new(init, name, run)
     end
 end

@@ -47,6 +47,7 @@ function start!(hub::BotsHub, log_path=joinpath(pwd(), "log"))
             schedule(init(m))
             is_initialized(state(hub), module_name)
             write(f, "[$d] end init $module_name\n")
+            simulate_interaction(1.0, 0.5)
         end
     end
     close(f)
